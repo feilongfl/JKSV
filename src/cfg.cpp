@@ -15,6 +15,7 @@ std::vector<uint64_t> cfg::favorites;
 static std::unordered_map<uint64_t, std::string> pathDefs;
 uint8_t cfg::sortType;
 std::string cfg::driveClientID, cfg::driveClientSecret, cfg::driveRefreshToken;
+std::string cfg::davUrl, cfg::davUser, cfg::davPass;
 
 const char *cfgPath = "sdmc:/config/JKSV/JKSV.cfg", *titleDefPath = "sdmc:/config/JKSV/titleDefs.txt", *workDirLegacy = "sdmc:/switch/jksv_dir.txt";
 static std::unordered_map<std::string, unsigned> cfgStrings =
@@ -23,7 +24,7 @@ static std::unordered_map<std::string, unsigned> cfgStrings =
     {"holdToOverwrite", 6}, {"forceMount", 7}, {"accountSystemSaves", 8}, {"allowSystemSaveWrite", 9}, {"directFSCommands", 10},
     {"exportToZIP", 11}, {"languageOverride", 12}, {"enableTrashBin", 13}, {"titleSortType", 14}, {"animationScale", 15},
     {"favorite", 16}, {"blacklist", 17}, {"autoName", 18}, {"driveClientID", 19}, {"driveClientSecret", 20}, {"driveRefreshToken", 21},
-    {"driveAuthCode", 22}
+    {"driveAuthCode", 22}, {"davUrl", 23}, {"davUser", 24}, {"davPass", 25}
 };
 
 const std::string _true_ = "true", _false_ = "false";
@@ -420,6 +421,20 @@ void cfg::loadConfig()
                         //cfg::driveAuthCode = cfgRead.getNextValueStr();
                         break;
 
+                    /* load webdav config */
+                    case 23:
+                        cfg::davUrl = cfgRead.getNextValueStr();
+                        break;
+
+                    case 24:
+                        cfg::davUser = cfgRead.getNextValueStr();
+                        break;
+
+                    case 25:
+                        cfg::davPass = cfgRead.getNextValueStr();
+                        break;
+                    /* load webdav config end */
+
                     default:
                         break;
                 }
@@ -465,6 +480,15 @@ void cfg::saveConfig()
 
     if(!cfg::driveRefreshToken.empty())
         fprintf(cfgOut, "driveRefreshToken = %s\n", cfg::driveRefreshToken.c_str());
+
+    if(!cfg::davUrl.empty())
+        fprintf(cfgOut, "davUrl = %s\n", cfg::davUrl.c_str());
+
+    if(!cfg::davUser.empty())
+        fprintf(cfgOut, "davUser = %s\n", cfg::davUser.c_str());
+
+    if(!cfg::davPass.empty())
+        fprintf(cfgOut, "davPass = %s\n", cfg::davPass.c_str());
 
     if(!cfg::favorites.empty())
     {
