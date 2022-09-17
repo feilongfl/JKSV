@@ -173,45 +173,56 @@ static void fldFuncUpload(void *a)
 
 static void fldFuncDownload_t(void *a)
 {
-    threadInfo *t = (threadInfo *)a;
-    drive::gdItem *in = (drive::gdItem *)t->argPtr;
-    data::userTitleInfo *utinfo = data::getCurrentUserTitleInfo();
-    data::titleInfo *tinfo = data::getTitleInfoByTID(utinfo->tid);
-    std::string targetPath = util::generatePathByTID(utinfo->tid) + in->name;
-    t->status->setStatus(ui::getUICString("threadStatusDownloadingFile", 0), in->name.c_str());
-    
-    if(cfg::config["ovrClk"])
-        util::sysBoost();
+    switch (*(size_t*)a) {
+    case drive::gd::DriveID: {
+        threadInfo *t = (threadInfo *)a;
+        drive::gdItem *in = (drive::gdItem *)t->argPtr;
+        data::userTitleInfo *utinfo = data::getCurrentUserTitleInfo();
+        data::titleInfo *tinfo = data::getTitleInfoByTID(utinfo->tid);
+        std::string targetPath = util::generatePathByTID(utinfo->tid) + in->name;
+        t->status->setStatus(ui::getUICString("threadStatusDownloadingFile", 0), in->name.c_str());
 
-    if(fs::fileExists(targetPath))
-        fs::delfile(targetPath);
+        if(cfg::config["ovrClk"])
+            util::sysBoost();
 
-    //Use this for progress bar
-    fs::copyArgs *cpy = fs::copyArgsCreate("", "", "", NULL, NULL, false, false, 0);
-    cpy->prog->setMax(in->size);
-    cpy->prog->update(0);
-    t->argPtr = cpy;
-    t->drawFunc = fs::fileDrawFunc;
+        if(fs::fileExists(targetPath))
+            fs::delfile(targetPath);
 
-    //DL struct
-    curlFuncs::curlDlArgs dlFile;
-    dlFile.path = targetPath;
-    dlFile.size = in->size;
-    dlFile.o = &cpy->offset;
+        //Use this for progress bar
+        fs::copyArgs *cpy = fs::copyArgsCreate("", "", "", NULL, NULL, false, false, 0);
+        cpy->prog->setMax(in->size);
+        cpy->prog->update(0);
+        t->argPtr = cpy;
+        t->drawFunc = fs::fileDrawFunc;
 
-    fs::gDrive->downloadFile(in->id, &dlFile);
+        //DL struct
+        curlFuncs::curlDlArgs dlFile;
+        dlFile.path = targetPath;
+        dlFile.size = in->size;
+        dlFile.o = &cpy->offset;
 
-    //fclose(dlFile.f);
+        fs::gDrive->downloadFile(in->id, &dlFile);
 
-    fs::copyArgsDestroy(cpy);
-    t->drawFunc = NULL;
+        //fclose(dlFile.f);
 
-    if(cfg::config["ovrClk"])
-        util::sysNormal();
+        fs::copyArgsDestroy(cpy);
+        t->drawFunc = NULL;
 
-    ui::fldRefreshMenu();
+        if(cfg::config["ovrClk"])
+            util::sysNormal();
 
-    t->finished = true;
+        ui::fldRefreshMenu();
+
+        t->finished = true;
+    } break; // drive::gd::DriveID
+
+    case drive::dav::DriveID: {
+        drive::davItem *in = (drive::davItem *)a;
+        } break; // drive::dav::DriveID
+
+    default:
+        break;
+    }
 }
 
 static void fldFuncDownload(void *a)
