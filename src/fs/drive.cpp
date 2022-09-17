@@ -9,8 +9,10 @@ std::string fs::jksvDriveID;
 
 void fs::driveInit()
 {
-    if(!cfg::davUrl.empty())
+    if(!cfg::davUrl.empty()) {
         fs::davDrive = new drive::dav;
+        fs::davDrive->SetPath(cfg::davUrl, cfg::davUser, cfg::davPass);
+    }
 
     if(cfg::driveClientID.empty() || cfg::driveClientSecret.empty())
         return;

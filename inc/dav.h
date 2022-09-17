@@ -12,6 +12,9 @@
 namespace drive {
 class dav {
 public:
+  bool SetPath(std::string url, std::string user, std::string pass);
+
 private:
+  std::string davUrl, davUser, davPass;
 };
 } // namespace drive

@@ -10,3 +10,11 @@
 #include "dav.h"
 #include "fs.h"
 #include "util.h"
+
+bool drive::dav::SetPath(std::string url, std::string user, std::string pass) {
+  this->davUrl = url;
+  this->davUser = user;
+  this->davPass = pass;
+
+  return false;
+}
