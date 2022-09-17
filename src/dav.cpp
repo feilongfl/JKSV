@@ -29,7 +29,9 @@ static inline void writeCurlError(const std::string &_function, int _cerror) {
 }
 
 /* file method,
- * special thanks for: https://code.blogs.iiidefix.net/posts/webdav-with-curl/
+ * special thanks for:
+ *  https://code.blogs.iiidefix.net/posts/webdav-with-curl/
+ *  https://stackoverflow.com/questions/26429904/list-files-folders-in-owncloud-with-php-curl
  */
 
 bool drive::dav::dirExists(const std::string &_dirName) {
@@ -62,6 +64,49 @@ bool drive::dav::createDir(const std::string &_dirName) {
     writeCurlError(__func__, error);
 
   return false;
+}
+
+bool drive::dav::listDirReq(const std::string &_dirName, std::string *xmlResp) {
+  CURL *curl = curl_easy_init();
+  std::string davPath(this->davUrl);
+  char *_dirNameCode =
+      curl_easy_escape(curl, _dirName.c_str(), _dirName.length());
+  davPath.append("/").append(_dirNameCode);
+  curl_free(_dirNameCode);
+
+  curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PROPFIND");
+  curl_easy_setopt(curl, CURLOPT_USERAGENT, userAgent);
+  curl_easy_setopt(curl, CURLOPT_URL, davPath.c_str());
+  curl_easy_setopt(curl, CURLOPT_USERNAME, this->davUser.c_str());
+  curl_easy_setopt(curl, CURLOPT_PASSWORD, this->davPass.c_str());
+
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlFuncs::writeDataString);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, xmlResp);
+
+  fs::logWrite("[DAVDrive](%s): CURL Mkdir %s, user %s, pass %s\n", __func__,
+               davPath.c_str(), this->davUser.c_str(), this->davPass.c_str());
+
+  int error = curl_easy_perform(curl);
+  curl_easy_cleanup(curl);
+
+  if (error == CURLE_OK) {
+    return true;
+  } else
+    writeCurlError(__func__, error);
+
+  return false;
+}
+
+void drive::dav::listDir(const std::string &_parent,
+                         std::vector<std::string *> &_out) {
+  _out.clear();
+  std::string *xmlResp = new std::string;
+
+  if (!this->listDirReq(_parent, xmlResp)) {
+    return;
+  }
+
+  // parse xml
 }
 
 bool drive::dav::fileExists(const std::string &_filename) {
