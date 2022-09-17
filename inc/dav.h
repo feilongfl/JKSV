@@ -10,12 +10,16 @@
 #include "curlfuncs.h"
 
 namespace drive {
+
 typedef struct {
+  size_t did;
   std::string name, path;
 } davItem;
 
 class dav {
 public:
+  const size_t DriveID = 2;
+
   // method for config
   bool SetPath(std::string url, std::string user, std::string pass);
 
@@ -35,7 +39,8 @@ private:
   bool listDirReq(const std::string &_dirName, std::string *xmlResp);
 
   // method for parse xml
-  bool xmlGetItemByPath(std::string &xml, xmlChar * xpath, std::vector<std::string> &_out);
+  bool xmlGetItemByPath(std::string &xml, xmlChar *xpath,
+                        std::vector<std::string> &_out);
 }; // class dav
 
 } // namespace drive

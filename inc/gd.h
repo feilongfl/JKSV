@@ -18,6 +18,7 @@ namespace drive
 {
     typedef struct 
     {
+        size_t did;
         std::string name, id, parent;
         bool isDir = false;
         unsigned int size;
@@ -26,6 +27,8 @@ namespace drive
     class gd
     {
         public:
+            const size_t DriveID = 1;
+
             void setClientID(const std::string& _clientID) { clientID = _clientID; }
             void setClientSecret(const std::string& _clientSecret) { secretID = _clientSecret; }
             void setRefreshToken(const std::string& _refreshToken) { rToken = _refreshToken; }

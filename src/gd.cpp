@@ -291,6 +291,7 @@ static void processList(const std::string& _json, std::vector<drive::gdItem>& _d
             json_object_object_get_ex(curFile, "parents", &parentArray);
 
             drive::gdItem newDirItem;
+            newDirItem.did = drive::gd::DriveID;
             newDirItem.name = json_object_get_string(nameString);
             newDirItem.id = json_object_get_string(idString);
             newDirItem.size = json_object_get_int(size);
@@ -423,6 +424,7 @@ bool drive::gd::createDir(const std::string& _dirName, const std::string& _paren
         json_object_object_get_ex(respParse, "id", &id);
 
         drive::gdItem newDir;
+        newDir.did = drive::gd::DriveID;
         newDir.name = _dirName;
         newDir.id = json_object_get_string(id);
         newDir.isDir = true;
@@ -542,6 +544,7 @@ void drive::gd::uploadFile(const std::string& _filename, const std::string& _par
         if(name && id && mimeType)
         {
             drive::gdItem uploadData;
+            uploadData.did = drive::gd::DriveID;
             uploadData.id = json_object_get_string(id);
             uploadData.name = json_object_get_string(name);
             uploadData.isDir = false;
