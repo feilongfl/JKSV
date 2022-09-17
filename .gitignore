@@ -1,5 +1,6 @@
 build/
 .vscode/
+test/
 *.cbp
 *.layout
 JKSV.elf
