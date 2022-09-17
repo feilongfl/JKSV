@@ -4,10 +4,14 @@
 #include "ui.h"
 
 drive::gd *fs::gDrive = NULL;
+drive::dav *fs::davDrive = NULL;
 std::string fs::jksvDriveID;
 
 void fs::driveInit()
 {
+    if(!cfg::davUrl.empty())
+        fs::davDrive = new drive::dav;
+
     if(cfg::driveClientID.empty() || cfg::driveClientSecret.empty())
         return;
 
@@ -56,6 +60,9 @@ void fs::driveExit()
 {
     if(fs::gDrive)
         delete gDrive;
+
+    if(fs::davDrive)
+        delete davDrive;
 }
 
 std::string fs::driveSignInGetAuthCode()
