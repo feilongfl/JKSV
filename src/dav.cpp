@@ -1,6 +1,6 @@
 #include <condition_variable>
 #include <curl/curl.h>
-#include <json-c/json.h>
+#include <libxml/xpathInternals.h>
 #include <mutex>
 #include <stdio.h>
 #include <string>
@@ -26,6 +26,11 @@ bool drive::dav::SetPath(std::string url, std::string user, std::string pass) {
 static inline void writeCurlError(const std::string &_function, int _cerror) {
   fs::logWrite("[DAVDrive](%s): CURL returned error %i\n", _function.c_str(),
                _cerror);
+}
+
+static inline void writeXmlError(const std::string &_function,
+                                 const std::string &msg) {
+  fs::logWrite("[DAVDrive](%s): XML fault %s", _function.c_str(), msg.c_str());
 }
 
 /* file method,
@@ -98,15 +103,56 @@ bool drive::dav::listDirReq(const std::string &_dirName, std::string *xmlResp) {
 }
 
 void drive::dav::listDir(const std::string &_parent,
-                         std::vector<std::string *> &_out) {
+                         std::vector<std::string> &_out) {
   _out.clear();
   std::string *xmlResp = new std::string;
 
   if (!this->listDirReq(_parent, xmlResp)) {
+    writeXmlError(__func__, "listDirReq error");
     return;
   }
 
-  // parse xml
+  xmlDocPtr doc = xmlParseMemory(xmlResp->c_str(), xmlResp->size());
+  xmlXPathContextPtr ctxt = xmlXPathNewContext(doc);
+  if (!ctxt) {
+    xmlFreeDoc(doc);
+    writeXmlError(__func__, "xmlXPathNewContext error");
+
+    return;
+  }
+  xmlXPathRegisterNs(ctxt, BAD_CAST "D", BAD_CAST "DAV:");
+  xmlChar *expression = BAD_CAST
+      "//D:response[*][D:propstat[1]/D:prop[1]/D:getcontenttype[1]]/D:href";
+  // D:response[*]/D:propstat[1]/D:prop[1][D:getcontenttype[1]]/displayname
+  xmlXPathObjectPtr res = xmlXPathEvalExpression(expression, ctxt);
+  if (!res) {
+    xmlXPathFreeContext(ctxt);
+    xmlFreeDoc(doc);
+    writeXmlError(__func__, "xmlXPathNewContext error");
+
+    return;
+  }
+
+  xmlNodeSetPtr nodeset = res->nodesetval;
+  if (!nodeset) {
+    xmlXPathFreeContext(ctxt);
+    xmlFreeDoc(doc);
+    writeXmlError(__func__, "xmlXPathNewContext error");
+
+    return;
+  }
+
+  for (int i = 0; i < nodeset->nodeNr; i++) {
+    xmlNodePtr node = nodeset->nodeTab[i];
+    xmlChar *name = xmlNodeGetContent(node);
+    // printf("%s\n", name);
+    _out.push_back(std::string((char *)name));
+  }
+
+  xmlXPathFreeObject(res);
+  xmlXPathFreeContext(ctxt);
+  xmlFreeDoc(doc);
+  return;
 }
 
 bool drive::dav::fileExists(const std::string &_filename) {

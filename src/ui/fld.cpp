@@ -14,7 +14,7 @@ static Mutex fldLock = 0;
 static std::string driveParent;
 static std::string davDriveTitle;
 static std::vector<drive::gdItem *> driveFldList;
-static std::vector<std::string *> davDriveFldList;
+static std::vector<std::string> davDriveFldList;
 
 static void fldMenuCallback(void *a)
 {
@@ -356,6 +356,19 @@ void ui::fldPopulateMenu()
         davDriveTitle = t->title;
 
         fs::davDrive->listDir(davDriveTitle, davDriveFldList);
+        for(unsigned i = 0; i < davDriveFldList.size(); i++, fldInd++)
+        {
+          std::string name = std::string("[DAV] ");
+        //   name.append(davDriveFldList[i].c_str());
+          fldMenu->addOpt(NULL, name);
+
+        //   fldMenu->optAddButtonEvent(fldInd, HidNpadButton_A, fldFuncDownload,
+        //                              davDriveFldList[i]);
+        //   fldMenu->optAddButtonEvent(fldInd, HidNpadButton_X,
+        //                              fldFuncDriveDelete, davDriveFldList[i]);
+        //   fldMenu->optAddButtonEvent(fldInd, HidNpadButton_Y,
+        //                              fldFuncDriveRestore, davDriveFldList[i]);
+        }
         // printf("[dav]Title: %s", t->title);
         // fldMenu->addOpt(NULL, "[DAV] " "test dav");
     }
