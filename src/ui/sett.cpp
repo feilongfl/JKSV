@@ -115,6 +115,12 @@ static void blEditMenuPopulate()
     }
 }
 
+static void toggleOpt_cfg(std::string *cfgKey, std::string desc, size_t maxLength) {
+    // cfg::config["davUrl"] = util::getStringInput(SwkbdType_QWERTY, cfg::config["davUrl"], ui::getUIString("swkbdSetDavUrl", 0), 64, 0, NULL);
+    *cfgKey =
+        util::getStringInput(SwkbdType_QWERTY, *cfgKey, desc, maxLength, 0, NULL);
+}
+
 //Todo: this different
 static void toggleOpt(void *a)
 {
@@ -227,6 +233,18 @@ static void toggleOpt(void *a)
             if(ui::animScale > 8)
                 ui::animScale = 1;
             break;
+
+        case 21:
+            toggleOpt_cfg(&cfg::davUrl, ui::getUIString("settingsMenu", 21), 256);
+            break;
+
+        case 22:
+            toggleOpt_cfg(&cfg::davUser, ui::getUIString("settingsMenu", 22), 64);
+            break;
+
+        case 23:
+            toggleOpt_cfg(&cfg::davPass, ui::getUIString("settingsMenu", 23), 128);
+            break;
     }
 }
 
@@ -267,7 +285,7 @@ void ui::settInit()
 
     optHelpX = 1220 - gfx::getTextWidth(ui::getUICString("helpSettings", 0), 18);
 
-    for(unsigned i = 0; i < 21; i++)
+    for(unsigned i = 0; i < 24; i++)
     {
         ui::settMenu->addOpt(NULL, ui::getUIString("settingsMenu", i));
         ui::settMenu->optAddButtonEvent(i, HidNpadButton_A, toggleOpt, NULL);

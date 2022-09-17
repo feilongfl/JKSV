@@ -202,6 +202,9 @@ void ui::initStrings()
     addUIString("settingsMenu", 18, "Enable Trash Bin: ");
     addUIString("settingsMenu", 19, "Title Sorting Type: ");
     addUIString("settingsMenu", 20, "Animation Scale: ");
+    addUIString("settingsMenu", 21, "Set Webdav Url");
+    addUIString("settingsMenu", 22, "Set Webdav UserName");
+    addUIString("settingsMenu", 23, "Set Webdav Password");
 
     //Main menu
     addUIString("mainMenuSettings", 0, "Settings");
