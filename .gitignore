@@ -2,3 +2,8 @@ build/
 .vscode/
 *.cbp
 *.layout
+JKSV.elf
+JKSV.nacp
+JKSV.nro
+JKSV.nso
+JKSV.pfs0
