@@ -12,7 +12,12 @@
 namespace drive {
 class dav {
 public:
+  // method for config
   bool SetPath(std::string url, std::string user, std::string pass);
+
+  // method for files
+  bool dirExists(const std::string &_dirName);
+  bool createDir(const std::string &_dirName);
 
 private:
   std::string davUrl, davUser, davPass;

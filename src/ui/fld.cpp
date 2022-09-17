@@ -153,7 +153,7 @@ static void fldFuncUpload_t(void *a)
 
 static void fldFuncUpload(void *a)
 {
-    if(fs::gDrive)
+    if(fs::gDrive || fs::davDrive)
         ui::newThread(fldFuncUpload_t, a, NULL);
     else
         ui::showPopMessage(POP_FRAME_DEFAULT, ui::getUICString("popDriveNotActive", 0));
@@ -335,6 +335,14 @@ void ui::fldPopulateMenu()
             fldMenu->optAddButtonEvent(fldInd, HidNpadButton_X, fldFuncDriveDelete, driveFldList[i]);
             fldMenu->optAddButtonEvent(fldInd, HidNpadButton_Y, fldFuncDriveRestore, driveFldList[i]);
         }
+    }
+
+    if(fs::davDrive) {
+        if(!fs::davDrive->dirExists(t->title))
+            fs::davDrive->createDir(t->title);
+
+        printf("[dav]Title: %s", t->title);
+        fldMenu->addOpt(NULL, "[DAV] " "test dav");
     }
 
     for(unsigned i = 0; i < fldList->getCount(); i++, fldInd++)
