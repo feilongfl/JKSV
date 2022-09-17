@@ -218,27 +218,30 @@ static void fldFuncDownload(void *a)
 {
     data::userTitleInfo *utinfo = data::getCurrentUserTitleInfo();
     data::titleInfo *tinfo = data::getTitleInfoByTID(utinfo->tid);
+    std::string testPath;
 
     switch (*(size_t*)a) {
         case drive::gd::DriveID: {
                 drive::gdItem *in = (drive::gdItem *)a;
-                std::string testPath = util::generatePathByTID(utinfo->tid) + in->name;
-                if(fs::fileExists(testPath))
-                {
-                    ui::confirmArgs *conf = ui::confirmArgsCreate(cfg::config["holdOver"], fldFuncDownload_t, NULL, a, ui::getUICString("confirmDriveOverwrite", 0));
-                    ui::confirm(conf);
-                }
-                else
-                    ui::newThread(fldFuncDownload_t, a, NULL);
+            testPath = util::generatePathByTID(utinfo->tid) + in->name;
             } break; // drive::gd::DriveID
 
         case drive::dav::DriveID: {
             drive::davItem *in = (drive::davItem *)a;
+            testPath = util::generatePathByTID(utinfo->tid) + in->name;
             } break; // drive::dav::DriveID
 
         default:
             break;
         }
+
+        if(fs::fileExists(testPath))
+        {
+            ui::confirmArgs *conf = ui::confirmArgsCreate(cfg::config["holdOver"], fldFuncDownload_t, NULL, a, ui::getUICString("confirmDriveOverwrite", 0));
+            ui::confirm(conf);
+        }
+        else
+            ui::newThread(fldFuncDownload_t, a, NULL);
 }
 
 static void fldFuncDriveDelete_t(void *a)
