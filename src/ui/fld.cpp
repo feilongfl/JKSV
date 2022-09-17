@@ -359,7 +359,7 @@ void ui::fldPopulateMenu()
         for(unsigned i = 0; i < davDriveFldList.size(); i++, fldInd++)
         {
           std::string name = std::string("[DAV] ");
-        //   name.append(davDriveFldList[i].c_str());
+          name.append(davDriveFldList[i]);
           fldMenu->addOpt(NULL, name);
 
         //   fldMenu->optAddButtonEvent(fldInd, HidNpadButton_A, fldFuncDownload,

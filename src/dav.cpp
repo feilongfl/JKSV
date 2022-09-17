@@ -122,8 +122,9 @@ void drive::dav::listDir(const std::string &_parent,
   }
   xmlXPathRegisterNs(ctxt, BAD_CAST "D", BAD_CAST "DAV:");
   xmlChar *expression = BAD_CAST
-      "//D:response[*][D:propstat[1]/D:prop[1]/D:getcontenttype[1]]/D:href";
-  // D:response[*]/D:propstat[1]/D:prop[1][D:getcontenttype[1]]/displayname
+      // "//D:response[*][D:propstat[1]/D:prop[1]/D:getcontenttype[1]]/D:href";
+      "//D:response[*]/D:propstat[1]/D:prop[1][D:getcontenttype[1]]/"
+      "D:displayname";
   xmlXPathObjectPtr res = xmlXPathEvalExpression(expression, ctxt);
   if (!res) {
     xmlXPathFreeContext(ctxt);
