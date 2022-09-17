@@ -257,24 +257,25 @@ static void fldFuncDownload(void *a)
 
 static void fldFuncDriveDelete_t(void *a)
 {
-    switch (*(size_t*)a) {
+    threadInfo *t = (threadInfo *)a;
+    t->status->setStatus(ui::getUICString("threadStatusDeletingFile", 0));
+    switch (*(size_t*)t->argPtr) {
     case drive::gd::DriveID: {
-        threadInfo *t = (threadInfo *)a;
         drive::gdItem *gdi = (drive::gdItem *)t->argPtr;
-        t->status->setStatus(ui::getUICString("threadStatusDeletingFile", 0));
         fs::gDrive->deleteFile(gdi->id);
-        ui::fldRefreshMenu();
-        t->finished = true;
         } break; // drive::gd::DriveID
 
     case drive::dav::DriveID: {
-        drive::davItem *in = (drive::davItem *)a;
-        
+        drive::davItem *gdi = (drive::davItem *)t->argPtr;
+        fs::davDrive->deleteFile(gdi->path);
         } break; // drive::dav::DriveID
 
     default:
         break;
     }
+
+    ui::fldRefreshMenu();
+    t->finished = true;
 }
 
 static void fldFuncDriveDelete(void *a)
@@ -288,7 +289,8 @@ static void fldFuncDriveDelete(void *a)
 
     case drive::dav::DriveID: {
         drive::davItem *in = (drive::davItem *)a;
-        
+        ui::confirmArgs *conf = ui::confirmArgsCreate(cfg::config["holdDel"], fldFuncDriveDelete_t, NULL, a, ui::getUICString("confirmDelete", 0), in->name.c_str());
+        ui::confirm(conf);
         } break; // drive::dav::DriveID
 
     default:
@@ -435,12 +437,12 @@ void ui::fldPopulateMenu()
           name.append(davDriveFldList[i].name);
           fldMenu->addOpt(NULL, name);
 
-          fldMenu->optAddButtonEvent(fldInd, HidNpadButton_A, fldFuncDownload,
-                                     &davDriveFldList[i]);
+        //   fldMenu->optAddButtonEvent(fldInd, HidNpadButton_A, fldFuncDownload,
+        //                              &davDriveFldList[i]);
           fldMenu->optAddButtonEvent(fldInd, HidNpadButton_X,
                                      fldFuncDriveDelete, &davDriveFldList[i]);
-          fldMenu->optAddButtonEvent(fldInd, HidNpadButton_Y,
-                                     fldFuncDriveRestore, &davDriveFldList[i]);
+        //   fldMenu->optAddButtonEvent(fldInd, HidNpadButton_Y,
+        //                              fldFuncDriveRestore, &davDriveFldList[i]);
         }
         // printf("[dav]Title: %s", t->title);
         // fldMenu->addOpt(NULL, "[DAV] " "test dav");
@@ -487,6 +489,23 @@ void ui::fldRefreshMenu()
             fldMenu->optAddButtonEvent(fldInd, HidNpadButton_A, fldFuncDownload, driveFldList[i]);
             fldMenu->optAddButtonEvent(fldInd, HidNpadButton_X, fldFuncDriveDelete, driveFldList[i]);
             fldMenu->optAddButtonEvent(fldInd, HidNpadButton_Y, fldFuncDriveRestore, driveFldList[i]);
+        }
+    }
+
+    if(fs::davDrive) {
+        fs::davDrive->listDir(davDriveTitle, davDriveFldList);
+        for(unsigned i = 0; i < davDriveFldList.size(); i++, fldInd++)
+        {
+          std::string name = std::string("[DAV] ");
+          name.append(davDriveFldList[i].name);
+          fldMenu->addOpt(NULL, name);
+
+        //   fldMenu->optAddButtonEvent(fldInd, HidNpadButton_A, fldFuncDownload,
+        //                              &davDriveFldList[i]);
+          fldMenu->optAddButtonEvent(fldInd, HidNpadButton_X,
+                                     fldFuncDriveDelete, &davDriveFldList[i]);
+        //   fldMenu->optAddButtonEvent(fldInd, HidNpadButton_Y,
+        //                              fldFuncDriveRestore, &davDriveFldList[i]);
         }
     }
 

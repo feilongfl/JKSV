@@ -31,6 +31,7 @@ public:
   bool fileExists(const std::string &_filename);
   void uploadFile(const std::string &_filename, const std::string &_title,
                   curlFuncs::curlUpArgs *_upload);
+  void deleteFile(const std::string &_filename);
 
 private:
   // configs
@@ -42,6 +43,7 @@ private:
   // method for parse xml
   bool xmlGetItemByPath(std::string &xml, xmlChar *xpath,
                         std::vector<std::string> &_out);
+  std::string getServerHostname(const std::string &_url);
 }; // class dav
 
 } // namespace drive

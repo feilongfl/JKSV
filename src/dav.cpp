@@ -1,6 +1,7 @@
 #include <condition_variable>
 #include <curl/curl.h>
 #include <mutex>
+#include <regex>
 #include <stdio.h>
 #include <string>
 #include <vector>
@@ -175,6 +176,7 @@ void drive::dav::listDir(const std::string &_parent,
 
   for (size_t i = 0; i < vHref.size(); i++) {
     davItem item;
+    item.did = DriveID;
     item.name = vName[i];
     item.path = vHref[i];
     item.size = std::stoi(vSize[i]);
@@ -210,6 +212,44 @@ void drive::dav::uploadFile(const std::string &_filename,
   curl_easy_setopt(curl, CURLOPT_READDATA, _upload);
   curl_easy_setopt(curl, CURLOPT_UPLOAD_BUFFERSIZE, DRIVE_UPLOAD_BUFFER_SIZE);
   curl_easy_setopt(curl, CURLOPT_UPLOAD, 1);
+  int error = curl_easy_perform(curl);
+  curl_easy_cleanup(curl);
+
+  if (error != CURLE_OK) {
+    writeCurlError(__func__, error);
+  }
+}
+
+std::string drive::dav::getServerHostname(const std::string &_url) {
+  std::regex r("https?:\\/\\/.*?\\/");
+  std::smatch sm;
+  std::string ret;
+
+  if (regex_search(_url, sm, r)) {
+    ret = sm.str();
+    ret.pop_back();
+  }
+
+  return ret;
+}
+
+void drive::dav::deleteFile(const std::string &_filename) {
+  CURL *curl = curl_easy_init();
+  std::string davPath = getServerHostname(this->davUrl);
+  fs::logWrite("[DAVDrive](%s): CURL DELETE HOST: %s\n", __func__, davPath.c_str());
+  if (davPath.empty())
+    return;
+
+  davPath.append(_filename);
+
+  fs::logWrite("[DAVDrive](%s): CURL DELETE: %s\n", __func__, davPath.c_str());
+
+  curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+  curl_easy_setopt(curl, CURLOPT_URL, davPath.c_str());
+  curl_easy_setopt(curl, CURLOPT_USERAGENT, userAgent);
+  curl_easy_setopt(curl, CURLOPT_USERNAME, this->davUser.c_str());
+  curl_easy_setopt(curl, CURLOPT_PASSWORD, this->davPass.c_str());
+
   int error = curl_easy_perform(curl);
   curl_easy_cleanup(curl);
 
