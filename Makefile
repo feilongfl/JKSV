@@ -48,7 +48,7 @@ ICON		:=	icon.jpg
 ARCH	:=	-march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -fPIE
 
 override CFLAGS	+=	`sdl2-config --cflags` `xml2-config --cflags` -g -Wall -O2 -ffunction-sections -ffast-math \
-			$(ARCH) $(DEFINES)
+			$(ARCH) $(DEFINES) -DWABDAV_DEBUG
 
 override CFLAGS	+=	$(INCLUDE) -D__SWITCH__ `freetype-config --cflags` `curl-config --cflags`
 

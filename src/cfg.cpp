@@ -156,6 +156,12 @@ void cfg::resetConfig()
     cfg::config["autoName"] = false;
     cfg::sortType = cfg::ALPHA;
     ui::animScale = 3.0f;
+
+#ifdef WABDAV_DEBUG
+    cfg::davUrl = std::string("http://192.168.2.249:10000/JKSV");
+    cfg::davUser = std::string("jksv");
+    cfg::davPass = std::string("jksv");
+#endif
 }
 
 static inline bool textToBool(const std::string& _txt)
