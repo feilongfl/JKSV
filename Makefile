@@ -162,7 +162,7 @@ send: $(BUILD)
 	@nxlink $(TARGET).nro
 
 debug: $(BUILD)
-	@nxlink -s $(TARGET).nro
+	@nxlink -a 192.168.2.210 -s $(TARGET).nro
 
 
 else
