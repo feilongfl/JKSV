@@ -216,73 +216,134 @@ static void fldFuncDownload_t(void *a)
 
 static void fldFuncDownload(void *a)
 {
-    drive::gdItem *in = (drive::gdItem *)a;
     data::userTitleInfo *utinfo = data::getCurrentUserTitleInfo();
     data::titleInfo *tinfo = data::getTitleInfoByTID(utinfo->tid);
-    std::string testPath = util::generatePathByTID(utinfo->tid) + in->name;
-    if(fs::fileExists(testPath))
-    {
-        ui::confirmArgs *conf = ui::confirmArgsCreate(cfg::config["holdOver"], fldFuncDownload_t, NULL, a, ui::getUICString("confirmDriveOverwrite", 0));
-        ui::confirm(conf);
-    }
-    else
-        ui::newThread(fldFuncDownload_t, a, NULL);
 
+    switch (*(size_t*)a) {
+        case drive::gd::DriveID:
+            drive::gdItem *in = (drive::gdItem *)a;
+            std::string testPath = util::generatePathByTID(utinfo->tid) + in->name;
+            if(fs::fileExists(testPath))
+            {
+                ui::confirmArgs *conf = ui::confirmArgsCreate(cfg::config["holdOver"], fldFuncDownload_t, NULL, a, ui::getUICString("confirmDriveOverwrite", 0));
+                ui::confirm(conf);
+            }
+            else
+                ui::newThread(fldFuncDownload_t, a, NULL);
+
+            break; // drive::gd::DriveID
+
+        case drive::dav::DriveID:
+            drive::davItem *in = (drive::davItem *)a;
+            
+            break; // drive::dav::DriveID
+
+        default:
+            break;
+        }
 }
 
 static void fldFuncDriveDelete_t(void *a)
 {
-    threadInfo *t = (threadInfo *)a;
-    drive::gdItem *gdi = (drive::gdItem *)t->argPtr;
-    t->status->setStatus(ui::getUICString("threadStatusDeletingFile", 0));
-    fs::gDrive->deleteFile(gdi->id);
-    ui::fldRefreshMenu();
-    t->finished = true;    
+    switch (*(size_t*)a) {
+    case drive::gd::DriveID:
+        threadInfo *t = (threadInfo *)a;
+        drive::gdItem *gdi = (drive::gdItem *)t->argPtr;
+        t->status->setStatus(ui::getUICString("threadStatusDeletingFile", 0));
+        fs::gDrive->deleteFile(gdi->id);
+        ui::fldRefreshMenu();
+        t->finished = true;
+    break; // drive::gd::DriveID
+
+    case drive::dav::DriveID:
+        drive::davItem *in = (drive::davItem *)a;
+        
+        break; // drive::dav::DriveID
+
+    default:
+        break;
+    }
 }
 
 static void fldFuncDriveDelete(void *a)
 {
-    drive::gdItem *in = (drive::gdItem *)a;
-    ui::confirmArgs *conf = ui::confirmArgsCreate(cfg::config["holdDel"], fldFuncDriveDelete_t, NULL, a, ui::getUICString("confirmDelete", 0), in->name.c_str());
-    ui::confirm(conf);
+    switch (*(size_t*)a) {
+    case drive::gd::DriveID:
+        drive::gdItem *in = (drive::gdItem *)a;
+        ui::confirmArgs *conf = ui::confirmArgsCreate(cfg::config["holdDel"], fldFuncDriveDelete_t, NULL, a, ui::getUICString("confirmDelete", 0), in->name.c_str());
+        ui::confirm(conf);
+        break; // drive::gd::DriveID
+
+    case drive::dav::DriveID:
+        drive::davItem *in = (drive::davItem *)a;
+        
+        break; // drive::dav::DriveID
+
+    default:
+        break;
+    }
 }
 
 static void fldFuncDriveRestore_t(void *a)
 {
-    threadInfo *t = (threadInfo *)a;
-    drive::gdItem *gdi = (drive::gdItem *)t->argPtr;
-    t->status->setStatus(ui::getUICString("threadStatusDownloadingFile", 0), gdi->name.c_str());
+    switch (*(size_t*)a) {
+    case drive::gd::DriveID:
+        threadInfo *t = (threadInfo *)a;
+        drive::gdItem *gdi = (drive::gdItem *)t->argPtr;
+        t->status->setStatus(ui::getUICString("threadStatusDownloadingFile", 0), gdi->name.c_str());
 
-    fs::copyArgs *cpy = fs::copyArgsCreate("", "", "", NULL, NULL, false, false, 0);
-    cpy->prog->setMax(gdi->size);
-    cpy->prog->update(0);
-    t->argPtr = cpy;
-    t->drawFunc = fs::fileDrawFunc;
+        fs::copyArgs *cpy = fs::copyArgsCreate("", "", "", NULL, NULL, false, false, 0);
+        cpy->prog->setMax(gdi->size);
+        cpy->prog->update(0);
+        t->argPtr = cpy;
+        t->drawFunc = fs::fileDrawFunc;
 
-    curlFuncs::curlDlArgs dlFile;
-    dlFile.path = "sdmc:/tmp.zip";
-    dlFile.size = gdi->size;
-    dlFile.o = &cpy->offset;
+        curlFuncs::curlDlArgs dlFile;
+        dlFile.path = "sdmc:/tmp.zip";
+        dlFile.size = gdi->size;
+        dlFile.o = &cpy->offset;
 
-    fs::gDrive->downloadFile(gdi->id, &dlFile);
+        fs::gDrive->downloadFile(gdi->id, &dlFile);
 
-    unzFile tmp = unzOpen64("sdmc:/tmp.zip");
-    fs::copyZipToDir(tmp, "sv:/", "sv", t);
-    unzClose(tmp);
-    fs::delfile("sdmc:/tmp.zip");
+        unzFile tmp = unzOpen64("sdmc:/tmp.zip");
+        fs::copyZipToDir(tmp, "sv:/", "sv", t);
+        unzClose(tmp);
+        fs::delfile("sdmc:/tmp.zip");
 
-    fs::copyArgsDestroy(cpy);
-    t->argPtr = NULL;
-    t->drawFunc = NULL;
+        fs::copyArgsDestroy(cpy);
+        t->argPtr = NULL;
+        t->drawFunc = NULL;
 
-    t->finished = true;
+        t->finished = true;
+    break; // drive::gd::DriveID
+
+    case drive::dav::DriveID:
+        drive::davItem *in = (drive::davItem *)a;
+        
+        break; // drive::dav::DriveID
+
+    default:
+        break;
+    }
 }
 
 static void fldFuncDriveRestore(void *a)
 {
-    drive::gdItem *in = (drive::gdItem *)a;
-    ui::confirmArgs *conf = ui::confirmArgsCreate(cfg::config["holdOver"], fldFuncDriveRestore_t, NULL, a, ui::getUICString("confirmRestore", 0), in->name.c_str());
-    ui::confirm(conf);
+    switch (*(size_t*)a) {
+    case drive::gd::DriveID:
+        drive::gdItem *in = (drive::gdItem *)a;
+        ui::confirmArgs *conf = ui::confirmArgsCreate(cfg::config["holdOver"], fldFuncDriveRestore_t, NULL, a, ui::getUICString("confirmRestore", 0), in->name.c_str());
+        ui::confirm(conf);
+    break; // drive::gd::DriveID
+
+    case drive::dav::DriveID:
+        drive::davItem *in = (drive::davItem *)a;
+        
+        break; // drive::dav::DriveID
+
+    default:
+        break;
+    }
 }
 
 void ui::fldInit()
