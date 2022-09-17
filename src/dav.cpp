@@ -1,6 +1,5 @@
 #include <condition_variable>
 #include <curl/curl.h>
-#include <libxml/xpathInternals.h>
 #include <mutex>
 #include <stdio.h>
 #include <string>
@@ -102,36 +101,24 @@ bool drive::dav::listDirReq(const std::string &_dirName, std::string *xmlResp) {
   return false;
 }
 
-void drive::dav::listDir(const std::string &_parent,
-                         std::vector<std::string> &_out) {
-  _out.clear();
-  std::string *xmlResp = new std::string;
-
-  if (!this->listDirReq(_parent, xmlResp)) {
-    writeXmlError(__func__, "listDirReq error");
-    return;
-  }
-
-  xmlDocPtr doc = xmlParseMemory(xmlResp->c_str(), xmlResp->size());
+bool drive::dav::xmlGetItemByPath(std::string &xml, xmlChar *xpath,
+                      std::vector<std::string> &_out) {
+  xmlDocPtr doc = xmlParseMemory(xml.c_str(), xml.size());
   xmlXPathContextPtr ctxt = xmlXPathNewContext(doc);
   if (!ctxt) {
     xmlFreeDoc(doc);
     writeXmlError(__func__, "xmlXPathNewContext error");
 
-    return;
+    return false;
   }
   xmlXPathRegisterNs(ctxt, BAD_CAST "D", BAD_CAST "DAV:");
-  xmlChar *expression = BAD_CAST
-      // "//D:response[*][D:propstat[1]/D:prop[1]/D:getcontenttype[1]]/D:href";
-      "//D:response[*]/D:propstat[1]/D:prop[1][D:getcontenttype[1]]/"
-      "D:displayname";
-  xmlXPathObjectPtr res = xmlXPathEvalExpression(expression, ctxt);
+  xmlXPathObjectPtr res = xmlXPathEvalExpression(xpath, ctxt);
   if (!res) {
     xmlXPathFreeContext(ctxt);
     xmlFreeDoc(doc);
     writeXmlError(__func__, "xmlXPathNewContext error");
 
-    return;
+    return false;
   }
 
   xmlNodeSetPtr nodeset = res->nodesetval;
@@ -140,20 +127,54 @@ void drive::dav::listDir(const std::string &_parent,
     xmlFreeDoc(doc);
     writeXmlError(__func__, "xmlXPathNewContext error");
 
-    return;
+    return false;
   }
 
   for (int i = 0; i < nodeset->nodeNr; i++) {
     xmlNodePtr node = nodeset->nodeTab[i];
-    xmlChar *name = xmlNodeGetContent(node);
-    // printf("%s\n", name);
-    _out.push_back(std::string((char *)name));
+    xmlChar *data = xmlNodeGetContent(node);
+    _out.push_back(std::string((char *)data));
   }
 
   xmlXPathFreeObject(res);
   xmlXPathFreeContext(ctxt);
   xmlFreeDoc(doc);
-  return;
+  return true;
+}
+
+void drive::dav::listDir(const std::string &_parent,
+                         std::vector<drive::davItem> &_out) {
+  _out.clear();
+  std::string *xmlResp = new std::string;
+
+  if (!this->listDirReq(_parent, xmlResp)) {
+    writeXmlError(__func__, "listDirReq error");
+    return;
+  }
+
+  xmlChar *xpHref = BAD_CAST
+      "//D:response[*][D:propstat[1]/D:prop[1]/D:getcontenttype[1]]/D:href";
+  xmlChar *xpName =
+      BAD_CAST "//D:response[*]/D:propstat[1]/D:prop[1][D:getcontenttype[1]]/"
+               "D:displayname";
+
+  std::vector<std::string> vHref;
+  std::vector<std::string> vName;
+
+  xmlGetItemByPath(*xmlResp, xpHref, vHref);
+  xmlGetItemByPath(*xmlResp, xpName, vName);
+
+  if (vHref.size() != vName.size()) {
+    writeXmlError(__func__, "vHref.size() != vName.size()");
+    return;
+  }
+
+  for (size_t i = 0; i < vHref.size(); i++) {
+    davItem item;
+    item.name = vName[i];
+    item.path = vHref[i];
+    _out.push_back(item);
+  }
 }
 
 bool drive::dav::fileExists(const std::string &_filename) {
