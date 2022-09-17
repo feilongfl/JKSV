@@ -18,7 +18,7 @@ typedef struct {
 
 class dav {
 public:
-  const size_t DriveID = 2;
+  static const size_t DriveID = 2;
 
   // method for config
   bool SetPath(std::string url, std::string user, std::string pass);

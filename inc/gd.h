@@ -27,7 +27,7 @@ namespace drive
     class gd
     {
         public:
-            const size_t DriveID = 1;
+            static const size_t DriveID = 1;
 
             void setClientID(const std::string& _clientID) { clientID = _clientID; }
             void setClientSecret(const std::string& _clientSecret) { secretID = _clientSecret; }

@@ -220,23 +220,21 @@ static void fldFuncDownload(void *a)
     data::titleInfo *tinfo = data::getTitleInfoByTID(utinfo->tid);
 
     switch (*(size_t*)a) {
-        case drive::gd::DriveID:
-            drive::gdItem *in = (drive::gdItem *)a;
-            std::string testPath = util::generatePathByTID(utinfo->tid) + in->name;
-            if(fs::fileExists(testPath))
-            {
-                ui::confirmArgs *conf = ui::confirmArgsCreate(cfg::config["holdOver"], fldFuncDownload_t, NULL, a, ui::getUICString("confirmDriveOverwrite", 0));
-                ui::confirm(conf);
-            }
-            else
-                ui::newThread(fldFuncDownload_t, a, NULL);
+        case drive::gd::DriveID: {
+                drive::gdItem *in = (drive::gdItem *)a;
+                std::string testPath = util::generatePathByTID(utinfo->tid) + in->name;
+                if(fs::fileExists(testPath))
+                {
+                    ui::confirmArgs *conf = ui::confirmArgsCreate(cfg::config["holdOver"], fldFuncDownload_t, NULL, a, ui::getUICString("confirmDriveOverwrite", 0));
+                    ui::confirm(conf);
+                }
+                else
+                    ui::newThread(fldFuncDownload_t, a, NULL);
+            } break; // drive::gd::DriveID
 
-            break; // drive::gd::DriveID
-
-        case drive::dav::DriveID:
+        case drive::dav::DriveID: {
             drive::davItem *in = (drive::davItem *)a;
-            
-            break; // drive::dav::DriveID
+            } break; // drive::dav::DriveID
 
         default:
             break;
@@ -246,19 +244,19 @@ static void fldFuncDownload(void *a)
 static void fldFuncDriveDelete_t(void *a)
 {
     switch (*(size_t*)a) {
-    case drive::gd::DriveID:
+    case drive::gd::DriveID: {
         threadInfo *t = (threadInfo *)a;
         drive::gdItem *gdi = (drive::gdItem *)t->argPtr;
         t->status->setStatus(ui::getUICString("threadStatusDeletingFile", 0));
         fs::gDrive->deleteFile(gdi->id);
         ui::fldRefreshMenu();
         t->finished = true;
-    break; // drive::gd::DriveID
+        } break; // drive::gd::DriveID
 
-    case drive::dav::DriveID:
+    case drive::dav::DriveID: {
         drive::davItem *in = (drive::davItem *)a;
         
-        break; // drive::dav::DriveID
+        } break; // drive::dav::DriveID
 
     default:
         break;
@@ -268,16 +266,16 @@ static void fldFuncDriveDelete_t(void *a)
 static void fldFuncDriveDelete(void *a)
 {
     switch (*(size_t*)a) {
-    case drive::gd::DriveID:
+    case drive::gd::DriveID: {
         drive::gdItem *in = (drive::gdItem *)a;
         ui::confirmArgs *conf = ui::confirmArgsCreate(cfg::config["holdDel"], fldFuncDriveDelete_t, NULL, a, ui::getUICString("confirmDelete", 0), in->name.c_str());
         ui::confirm(conf);
-        break; // drive::gd::DriveID
+        } break; // drive::gd::DriveID
 
-    case drive::dav::DriveID:
+    case drive::dav::DriveID: {
         drive::davItem *in = (drive::davItem *)a;
         
-        break; // drive::dav::DriveID
+        } break; // drive::dav::DriveID
 
     default:
         break;
@@ -287,7 +285,7 @@ static void fldFuncDriveDelete(void *a)
 static void fldFuncDriveRestore_t(void *a)
 {
     switch (*(size_t*)a) {
-    case drive::gd::DriveID:
+    case drive::gd::DriveID: {
         threadInfo *t = (threadInfo *)a;
         drive::gdItem *gdi = (drive::gdItem *)t->argPtr;
         t->status->setStatus(ui::getUICString("threadStatusDownloadingFile", 0), gdi->name.c_str());
@@ -315,12 +313,12 @@ static void fldFuncDriveRestore_t(void *a)
         t->drawFunc = NULL;
 
         t->finished = true;
-    break; // drive::gd::DriveID
+        } break; // drive::gd::DriveID
 
-    case drive::dav::DriveID:
+    case drive::dav::DriveID: {
         drive::davItem *in = (drive::davItem *)a;
         
-        break; // drive::dav::DriveID
+        } break; // drive::dav::DriveID
 
     default:
         break;
@@ -330,16 +328,16 @@ static void fldFuncDriveRestore_t(void *a)
 static void fldFuncDriveRestore(void *a)
 {
     switch (*(size_t*)a) {
-    case drive::gd::DriveID:
+    case drive::gd::DriveID: {
         drive::gdItem *in = (drive::gdItem *)a;
         ui::confirmArgs *conf = ui::confirmArgsCreate(cfg::config["holdOver"], fldFuncDriveRestore_t, NULL, a, ui::getUICString("confirmRestore", 0), in->name.c_str());
         ui::confirm(conf);
-    break; // drive::gd::DriveID
+        } break; // drive::gd::DriveID
 
-    case drive::dav::DriveID:
+    case drive::dav::DriveID: {
         drive::davItem *in = (drive::davItem *)a;
         
-        break; // drive::dav::DriveID
+        } break; // drive::dav::DriveID
 
     default:
         break;
