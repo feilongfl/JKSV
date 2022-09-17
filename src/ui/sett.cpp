@@ -236,14 +236,17 @@ static void toggleOpt(void *a)
 
         case 21:
             toggleOpt_cfg(&cfg::davUrl, ui::getUIString("settingsMenu", 21), 256);
+            fs::davDrive->SetPath(cfg::davUrl, cfg::davUser, cfg::davPass);
             break;
 
         case 22:
             toggleOpt_cfg(&cfg::davUser, ui::getUIString("settingsMenu", 22), 64);
+            fs::davDrive->SetPath(cfg::davUrl, cfg::davUser, cfg::davPass);
             break;
 
         case 23:
             toggleOpt_cfg(&cfg::davPass, ui::getUIString("settingsMenu", 23), 128);
+            fs::davDrive->SetPath(cfg::davUrl, cfg::davUser, cfg::davPass);
             break;
     }
 }
