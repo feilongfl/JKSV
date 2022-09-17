@@ -18,6 +18,9 @@ public:
   // method for files
   bool dirExists(const std::string &_dirName);
   bool createDir(const std::string &_dirName);
+  bool fileExists(const std::string &_filename);
+  void uploadFile(const std::string &_filename, const std::string &_title,
+                  curlFuncs::curlUpArgs *_upload);
 
 private:
   std::string davUrl, davUser, davPass;

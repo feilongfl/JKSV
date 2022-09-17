@@ -12,6 +12,7 @@ static SDL_Texture *fldBuffer;
 static unsigned int fldGuideWidth = 0;
 static Mutex fldLock = 0;
 static std::string driveParent;
+static std::string davDriveTitle;
 static std::vector<drive::gdItem *> driveFldList;
 
 static void fldMenuCallback(void *a)
@@ -127,13 +128,23 @@ static void fldFuncUpload_t(void *a)
     upload.f = fopen(path.c_str(), "rb");
     upload.o = &cpyArgs->offset;
 
-    if(fs::gDrive->fileExists(filename))
-    {
-        std::string id = fs::gDrive->getFileID(filename);
-        fs::gDrive->updateFile(id, &upload);
+    if(fs::gDrive) {
+        if(fs::gDrive->fileExists(filename))
+        {
+            std::string id = fs::gDrive->getFileID(filename);
+            fs::gDrive->updateFile(id, &upload);
+        }
+        else
+            fs::gDrive->uploadFile(filename, driveParent, &upload);
+    } else if(fs::davDrive) {
+        if(fs::davDrive->fileExists(filename))
+        {
+            // todo: check if need overwrite
+            // fs::davDrive->uploadFile(filename, davDriveTitle, &upload);
+        }
+        else
+            fs::davDrive->uploadFile(filename, davDriveTitle, &upload);
     }
-    else
-        fs::gDrive->uploadFile(filename, driveParent, &upload);
 
     fclose(upload.f);
 
@@ -340,6 +351,8 @@ void ui::fldPopulateMenu()
     if(fs::davDrive) {
         if(!fs::davDrive->dirExists(t->title))
             fs::davDrive->createDir(t->title);
+
+        davDriveTitle = t->title;
 
         printf("[dav]Title: %s", t->title);
         fldMenu->addOpt(NULL, "[DAV] " "test dav");
