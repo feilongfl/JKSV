@@ -102,7 +102,7 @@ bool drive::dav::listDirReq(const std::string &_dirName, std::string *xmlResp) {
 }
 
 bool drive::dav::xmlGetItemByPath(std::string &xml, xmlChar *xpath,
-                      std::vector<std::string> &_out) {
+                                  std::vector<std::string> &_out) {
   xmlDocPtr doc = xmlParseMemory(xml.c_str(), xml.size());
   xmlXPathContextPtr ctxt = xmlXPathNewContext(doc);
   if (!ctxt) {
@@ -157,15 +157,19 @@ void drive::dav::listDir(const std::string &_parent,
   xmlChar *xpName =
       BAD_CAST "//D:response[*]/D:propstat[1]/D:prop[1][D:getcontenttype[1]]/"
                "D:displayname";
+  xmlChar *xpSize = BAD_CAST "//D:response[*]/D:propstat[1]/"
+                             "D:prop[D:getcontenttype[1]]/D:getcontentlength";
 
   std::vector<std::string> vHref;
   std::vector<std::string> vName;
+  std::vector<std::string> vSize;
 
   xmlGetItemByPath(*xmlResp, xpHref, vHref);
   xmlGetItemByPath(*xmlResp, xpName, vName);
+  xmlGetItemByPath(*xmlResp, xpSize, vSize);
 
-  if (vHref.size() != vName.size()) {
-    writeXmlError(__func__, "vHref.size() != vName.size()");
+  if (vHref.size() != vName.size() || vHref.size() != vSize.size()) {
+    writeXmlError(__func__, "vHref, vName, vSize size mismatch");
     return;
   }
 
@@ -173,6 +177,7 @@ void drive::dav::listDir(const std::string &_parent,
     davItem item;
     item.name = vName[i];
     item.path = vHref[i];
+    item.size = std::stoi(vSize[i]);
     _out.push_back(item);
   }
 }

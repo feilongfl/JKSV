@@ -14,6 +14,7 @@ namespace drive {
 typedef struct {
   size_t did;
   std::string name, path;
+  unsigned int size;
 } davItem;
 
 class dav {
