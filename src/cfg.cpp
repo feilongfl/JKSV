@@ -158,7 +158,7 @@ void cfg::resetConfig()
     ui::animScale = 3.0f;
 
 #ifdef WABDAV_DEBUG
-    cfg::davUrl = std::string("http://192.168.2.249:10000/JKSV");
+    cfg::davUrl = std::string("http://192.168.10.249:10000/JKSV");
     cfg::davUser = std::string("jksv");
     cfg::davPass = std::string("jksv");
 #endif
